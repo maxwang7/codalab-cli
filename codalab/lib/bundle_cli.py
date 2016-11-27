@@ -1078,19 +1078,21 @@ class BundleCLI(object):
         else:
             unpack = False
 
+        # Upload by URL
+        # FIXME: requires passing a OAuth token..
         # Send file over
-        progress = FileTransferProgress('Copied ', f=self.stderr)
-        source = source_client.fetch_contents_blob(source_bundle_uuid)
-        with closing(source), progress:
-            dest_client.upload_contents_blob(
-                dest_bundle['id'],
-                fileobj=source,
-                params={
-                    'filename': filename,
-                    'unpack': unpack,
-                    'simplify': False,  # retain original bundle verbatim
-                },
-                progress_callback=progress.update)
+        # progress = FileTransferProgress('Copied ', f=self.stderr)
+        # source = source_client.fetch_contents_blob(source_bundle_uuid)
+        # with closing(source), progress:
+        dest_client.upload_contents_blob(
+            dest_bundle['id'],
+            # fileobj=source,
+            params={
+                'urls': source_client.contents_blob_url(source_bundle_uuid),
+                'filename': filename,
+                'unpack': unpack,
+                'simplify': False,  # retain original bundle verbatim
+            })
 
     @Commands.command(
         'make',

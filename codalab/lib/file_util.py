@@ -59,6 +59,7 @@ def download_url(source_url, target_path, print_status=False):
     """
     Download the file at |source_url| and write it to |target_path|.
     """
+    # TODO: use Content-Disposition filename to get filename
     in_file = urllib2.urlopen(source_url)
     total_bytes = in_file.info().getheader('Content-Length')
     if total_bytes:

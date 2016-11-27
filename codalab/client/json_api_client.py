@@ -523,6 +523,15 @@ class JsonApiClient(RestClient):
                                       query_params={'depth': depth})
         return response['data']
 
+    @staticmethod
+    def _contents_blob_url(bundle_id, target_path=''):
+        return '/bundles/%s/contents/blob/%s' % \
+               (bundle_id, urllib.quote(target_path))
+
+    def contents_blob_url(self, bundle_id, target_path=''):
+        request_path = self._contents_blob_url(bundle_id, target_path)
+        return self._base_url + request_path
+
     @wrap_exception('Unable to fetch contents blob of bundle {1}')
     def fetch_contents_blob(self, bundle_id, target_path='', range_=None,
                             head=None, tail=None):
@@ -536,8 +545,7 @@ class JsonApiClient(RestClient):
         :param tail: number of lines to summarize from end of file
         :return: file-like object containing requested data blob
         """
-        request_path = '/bundles/%s/contents/blob/%s' % \
-                       (bundle_id, urllib.quote(target_path))
+        request_path = self._contents_blob_url(bundle_id, target_path)
         headers = {'Accept-Encoding': 'gzip'}
         if range_ is not None:
             headers['Range'] = 'bytes=%d-%d' % range_
@@ -567,7 +575,7 @@ class JsonApiClient(RestClient):
                                   with the number of bytes uploaded so far
         :return: None
         """
-        request_path = '/bundles/%s/contents/blob/' % bundle_id
+        request_path = self._contents_blob_url(bundle_id)
         params = params or {}
         params['finalize'] = True
         params = self._pack_params(params)
