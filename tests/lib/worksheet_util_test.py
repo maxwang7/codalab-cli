@@ -6,6 +6,7 @@ import unittest
 
 from codalab.common import PreconditionViolation
 from codalab.lib import worksheet_util
+from codalab.client.json_api_client import JsonApiClient
 
 class WorksheetUtilTest(unittest.TestCase):
   def test_apply_func(self):
@@ -22,3 +23,9 @@ class WorksheetUtilTest(unittest.TestCase):
     self.assertEqual(worksheet_util.apply_func('s/a/b', 'aa'), 'bb')
     self.assertEqual(worksheet_util.apply_func(r's/(.+)\/(.+)/\2\/\1', '3/10'), '10/3')
     self.assertEqual(worksheet_util.apply_func('%.2f', '1.2345'), '1.23')
+
+  def test_interpret_file_genpath(self):
+    # create client
+    client = JsonApiClient()
+    pass
+    # self.assertEqual
