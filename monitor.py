@@ -124,7 +124,8 @@ def error_logs(error_type, s):
         last_sent[error_type] = t
 
 durations = defaultdict(list)  # Command => durations for that command
-def run_command(args, soft_time_limit=15, hard_time_limit=60, include_output=True):
+def run_command(args, soft_time_limit=15, hard_time_limit=60,
+                include_output=True, return_exitcode=False):
     # We cap the running time to hard_time_limit, but print out an error if we exceed soft_time_limit.
     start_time = time.time()
     args = ['timeout', '%ss' % hard_time_limit] + args
@@ -161,7 +162,10 @@ def run_command(args, soft_time_limit=15, hard_time_limit=60, include_output=Tru
     if duration > soft_time_limit:
         error_logs('command too slow: ' + ' '.join(simple_args), message)
 
-    return output.rstrip()
+    if return_exitcode:
+        return exitcode
+    else:
+        return output.rstrip()
 
 timer = 0
 def ping_time():
@@ -231,8 +235,14 @@ while True:
             if 'BYTES_IN_MB' not in cat_result:
                 error_logs('download failed', 'Uploaded file should contain the string BYTES_IN_MB, contents:\n' + cat_result)
             uuid = run_command(['cl', 'run', 'stress-test.pl:' + upload_uuid, 'perl stress-test.pl 5 10 10'])
-            run_command(['cl', 'wait', uuid], 30, 300)  # Running might take a while
-            run_command(['cl', 'rm', upload_uuid, uuid])
+            # Run stress test and only remove run if succeeded
+            exitcode = run_command(['cl', 'wait', uuid], 30, 300, return_exitcode=True)  # Running might take a while
+            if exitcode == 0:
+                run_command(['cl', 'rm', upload_uuid, uuid])
+            else:
+                # Tag the failed bundle instead for debugging
+                run_command(['cl', 'rm', '--force', upload_uuid])
+                run_command(['cl', 'edit', uuid, '-T', 'monitor-debug'])
 
     except Exception, e:
         error_logs('exception', 'Exception: %s' % e)

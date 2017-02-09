@@ -98,13 +98,25 @@ class TorqueBundleManager(BundleManager):
                              'metadata': {'failure_message': failure_message}})
 
     def _read_torque_error_log(self, job_handle):
+        # error_log_path = os.path.join(self._torque_log_dir, 'stderr.' + job_handle)
+        # if os.path.exists(error_log_path):
+        #     with open(error_log_path) as f:
+        #         lines = [line for line in f.readlines() if not line.startswith('PBS')]
+        #         if lines:
+        #             return ''.join(lines)
+
+        # DEBUG: collect stdout as well and don't ignore PBS lines
         error_log_path = os.path.join(self._torque_log_dir, 'stderr.' + job_handle)
+        output_log_path = os.path.join(self._torque_log_dir, 'stdout.' + job_handle)
+        lines = []
         if os.path.exists(error_log_path):
             with open(error_log_path) as f:
-                lines = [line for line in f.readlines() if not line.startswith('PBS')]
-                if lines:
-                    return ''.join(lines)
-
+                lines.extend([line for line in f.readlines()])# if not line.startswith('PBS')])
+        if os.path.exists(output_log_path):
+            with open(output_log_path) as f:
+                lines.extend([line for line in f.readlines()])# if not line.startswith('PBS')])
+        if lines:
+            return ''.join(lines)
         return None
 
     def _start_torque_workers(self):
