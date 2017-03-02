@@ -6,6 +6,7 @@ import json
 import threading
 import urllib
 import urllib2
+import ssl
 
 
 # TODO(sckoo): clean up auth logic across:
@@ -64,7 +65,8 @@ class RestOAuthHandler(threading.local):
             headers=headers,
             data=urllib.urlencode(data))
         try:
-            response = urllib2.urlopen(request)
+            gcontext = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
+            response = urllib2.urlopen(request, context=gcontext)
             result = json.load(response)
             return result
         except urllib2.HTTPError as e:
